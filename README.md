@@ -27,13 +27,6 @@ data/
 templates/
   finding.md               ← Security finding output format
   report.md                ← Assessment report output format
-
-# Standalone CLI utilities (not used by OpenCode at runtime)
-config.json                ← Module metadata consumed by run-workflow.js
-workflows/                 ← Workflow definitions for the CLI runner
-scripts/
-  run-workflow.js          ← CLI workflow orchestrator
-  extract_fiasse_sections.py ← Data extraction utility
 ```
 
 ## Prerequisites
@@ -76,31 +69,9 @@ Run these from the OpenCode prompt:
 |-------|-------------|
 | `securability-reviewer` | Read-only agent that can analyze but not edit files |
 
-## Standalone CLI Usage
+## Direct Tool Usage
 
-The module also includes a standalone workflow runner that does not require OpenCode:
-
-```bash
-node scripts/run-workflow.js <workflow-id> <input-json-file>
-```
-
-Workflow IDs: `fiasse-lookup`, `securability-review`, `secure-generate`, `prd-securability-enhance`
-
-### Example Inputs
-
-```bash
-# FIASSE lookup
-echo '{"topic":"integrity","maxSections":3}' > /tmp/input.json
-node scripts/run-workflow.js fiasse-lookup /tmp/input.json
-
-# Securability review
-echo '{"workspaceRoot":".","targetPath":"src"}' > /tmp/input.json
-node scripts/run-workflow.js securability-review /tmp/input.json
-```
-
-### Call Tools Directly
-
-Each tool accepts JSON from stdin and emits JSON to stdout:
+Each tool also accepts JSON from stdin and emits JSON to stdout:
 
 ```bash
 echo '{"topic":"transparency"}' | node tools/fiasse_lookup.js

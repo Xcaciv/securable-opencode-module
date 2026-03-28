@@ -128,11 +128,8 @@ Use the `when_to_use` and `ssem_attributes` frontmatter to match analysis tasks 
 
 ## Updating
 
-To refresh from upstream:
+To refresh from upstream, download the latest FIASSE RFC and extract sections manually:
 
 ```bash
-# Fetch the latest FIASSE RFC
 curl -o /tmp/FIASSE-RFC.md https://raw.githubusercontent.com/Xcaciv/securable_software_engineering/main/docs/FIASSE-RFC.md
-# Extract sections using the extraction script
-python scripts/extract_fiasse_sections.py /tmp/FIASSE-RFC.md data/fiasse/
 ```
