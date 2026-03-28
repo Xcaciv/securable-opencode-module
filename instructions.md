@@ -9,10 +9,8 @@ You are augmented with the **FIASSE Securable Engineering Module**. This module 
 
 - `data/fiasse/` — FIASSE RFC reference sections (S2.x–S8.x) with YAML frontmatter. Consult these for definitions, measurement criteria, and principles.
 - `data/asvs/` — OWASP ASVS 5.0 feature-aligned security requirements by chapter.
-- `workflows/` — Detailed step-by-step procedures for analysis workflows.
 - `templates/` — Output format templates for findings and reports.
 - `tools/` — MCP tool server providing securability review, code generation, and FIASSE lookup tools.
-- `scripts/` — Utility scripts for data extraction.
 
 ## Available Tools
 
@@ -21,8 +19,6 @@ You are augmented with the **FIASSE Securable Engineering Module**. This module 
 Analyze code for securable engineering qualities using the SSEM framework. Scores nine attributes across three pillars (Maintainability, Trustworthiness, Reliability) on a 0–10 scale.
 
 **Invoke when**: You are asked to review, assess, audit, or evaluate code securability, code quality for security, or FIASSE/SSEM compliance.
-
-**Full procedure**: See `workflows/securability-review.workflow.json`.
 
 ### secure_generate
 
@@ -35,6 +31,12 @@ Wrap code generation with FIASSE/SSEM constraints so that output is engineered t
 Look up FIASSE/SSEM/ASVS reference material by topic keyword or section identifier.
 
 **Invoke when**: You need to reference FIASSE principles, SSEM attribute definitions, ASVS requirements, or measurement criteria.
+
+### prd_securability_enhance
+
+Enhance PRD features with ASVS requirement mapping and FIASSE/SSEM securability annotations.
+
+**Invoke when**: You are asked to enhance, annotate, or review a product requirements document for securability.
 
 ## Guiding Principles
 

@@ -11,27 +11,29 @@ Capabilities:
 ## Module Layout
 
 ```text
-opencode.json              ← OpenCode configuration (MCP server entry point)
-config.json                ← Module metadata and tool registry
-instructions.md            ← Agent instructions for FIASSE/SSEM usage
+opencode.json              ← OpenCode configuration (MCP + commands + agents)
+instructions.md            ← Agent instructions loaded by OpenCode
 tools/
-  mcp_server.js            ← MCP server exposing all tools
+  mcp_server.js            ← MCP server exposing all tools (JSON-RPC 2.0 / stdio)
   fiasse_lookup.js         ← FIASSE/SSEM reference lookup
   securability_review.js   ← SSEM scoring and review
   secure_generate.js       ← Securability-constrained generation contract
   prd_securability_enhance.js ← PRD enhancement with ASVS mapping
   lib/
     common.js              ← Shared helpers (zero external deps)
-workflows/                 ← Workflow definitions for the script runner
-scripts/
-  run-workflow.js          ← CLI workflow orchestrator
-  extract_fiasse_sections.py ← Data extraction utility
 data/
   fiasse/                  ← FIASSE RFC reference sections
   asvs/                    ← OWASP ASVS 5.0 requirements
 templates/
   finding.md               ← Security finding output format
   report.md                ← Assessment report output format
+
+# Standalone CLI utilities (not used by OpenCode at runtime)
+config.json                ← Module metadata consumed by run-workflow.js
+workflows/                 ← Workflow definitions for the CLI runner
+scripts/
+  run-workflow.js          ← CLI workflow orchestrator
+  extract_fiasse_sections.py ← Data extraction utility
 ```
 
 ## Prerequisites
@@ -41,7 +43,14 @@ templates/
 
 ## Usage with OpenCode
 
-Place this module in your project root. OpenCode reads `opencode.json` and starts the MCP server automatically. The four tools are then available to the agent:
+Place this module in your project root. OpenCode reads `opencode.json` and:
+
+1. **Starts the MCP server** — exposing four tools to the agent
+2. **Loads instructions** — from `instructions.md`
+3. **Registers commands** — `/securability-review`, `/secure-generate`, `/fiasse-lookup`, `/prd-enhance`
+4. **Registers agents** — `securability-reviewer` (read-only analysis agent)
+
+### MCP Tools
 
 | Tool | Description |
 |------|-------------|
@@ -50,75 +59,54 @@ Place this module in your project root. OpenCode reads `opencode.json` and start
 | `secure_generate` | Generate a securability-constrained code generation contract |
 | `prd_securability_enhance` | Enhance PRD features with ASVS + FIASSE/SSEM annotations |
 
-## Run Workflows (CLI)
+### Commands
 
-Workflows can also be executed standalone via the CLI:
+Run these from the OpenCode prompt:
+
+| Command | Description |
+|---------|-------------|
+| `/securability-review` | Run SSEM analysis on the current workspace |
+| `/secure-generate` | Generate code with securability constraints |
+| `/fiasse-lookup` | Look up FIASSE/SSEM reference material |
+| `/prd-enhance` | Annotate a PRD with ASVS + FIASSE/SSEM |
+
+### Agents
+
+| Agent | Description |
+|-------|-------------|
+| `securability-reviewer` | Read-only agent that can analyze but not edit files |
+
+## Standalone CLI Usage
+
+The module also includes a standalone workflow runner that does not require OpenCode:
 
 ```bash
 node scripts/run-workflow.js <workflow-id> <input-json-file>
 ```
 
-Workflow IDs:
-- `fiasse-lookup`
-- `securability-review`
-- `secure-generate`
-- `prd-securability-enhance`
+Workflow IDs: `fiasse-lookup`, `securability-review`, `secure-generate`, `prd-securability-enhance`
 
 ### Example Inputs
 
-`lookup-input.json`
-```json
-{
-  "topic": "integrity",
-  "maxSections": 3
-}
+```bash
+# FIASSE lookup
+echo '{"topic":"integrity","maxSections":3}' > /tmp/input.json
+node scripts/run-workflow.js fiasse-lookup /tmp/input.json
+
+# Securability review
+echo '{"workspaceRoot":".","targetPath":"src"}' > /tmp/input.json
+node scripts/run-workflow.js securability-review /tmp/input.json
 ```
 
-`review-input.json`
-```json
-{
-  "workspaceRoot": ".",
-  "targetPath": "src"
-}
-```
-
-`generate-input.json`
-```json
-{
-  "request": "Create a user registration API endpoint",
-  "language": "TypeScript",
-  "framework": "Express"
-}
-```
-
-`prd-input.json`
-```json
-{
-  "workspaceRoot": ".",
-  "prdPath": "docs/prd.md",
-  "asvsLevel": 2,
-  "maxRequirementsPerFeature": 6
-}
-```
-
-## Call Tools Directly
+### Call Tools Directly
 
 Each tool accepts JSON from stdin and emits JSON to stdout:
 
 ```bash
-echo {"topic":"transparency"} | node tools/fiasse_lookup.js
-```
-
-```bash
-echo {"request":"Build a secure file upload handler","language":"Python"} | node tools/secure_generate.js
-```
-
-```bash
-echo {"workspaceRoot":".","targetPath":"."} | node tools/securability_review.js
-```
-
-```bash
-echo {"workspaceRoot":".","prdPath":"docs/prd.md","asvsLevel":2} | node tools/prd_securability_enhance.js
+echo '{"topic":"transparency"}' | node tools/fiasse_lookup.js
+echo '{"request":"Build a secure file upload handler","language":"Python"}' | node tools/secure_generate.js
+echo '{"workspaceRoot":".","targetPath":"."}' | node tools/securability_review.js
+echo '{"workspaceRoot":".","prdPath":"docs/prd.md","asvsLevel":2}' | node tools/prd_securability_enhance.js
 ```
 
 ## Limitations

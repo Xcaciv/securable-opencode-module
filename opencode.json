@@ -1,13 +1,47 @@
 {
-  "$schema": "https://opencode.ai/config.schema.json",
-  "instructions": "./instructions.md",
-  "mcpServers": {
+  "$schema": "https://opencode.ai/config.json",
+
+  "instructions": ["./instructions.md"],
+
+  "mcp": {
     "securable": {
-      "command": "node",
-      "args": ["./tools/mcp_server.js"],
-      "env": {
+      "type": "local",
+      "command": ["node", "./tools/mcp_server.js"],
+      "environment": {
         "SECURABLE_DATA_DIR": "./data",
         "SECURABLE_TEMPLATES_DIR": "./templates"
+      }
+    }
+  },
+
+  "command": {
+    "securability-review": {
+      "description": "Run a FIASSE/SSEM securability review on the current workspace",
+      "prompt": "Use the securability_review tool to analyze the code in this workspace. Review the results and present a summary of the SSEM scores, key findings, and recommended improvements."
+    },
+    "secure-generate": {
+      "description": "Generate code with FIASSE/SSEM securability constraints",
+      "prompt": "Ask me what code I need generated, then use the secure_generate tool to build a securability-constrained generation contract. Present the contract and the handoff prompt for implementation."
+    },
+    "fiasse-lookup": {
+      "description": "Look up FIASSE/SSEM reference material by topic",
+      "prompt": "Ask me what FIASSE/SSEM topic I want to look up, then use the fiasse_lookup tool to find relevant sections and guidance. Present the results clearly."
+    },
+    "prd-enhance": {
+      "description": "Enhance a PRD with ASVS and FIASSE/SSEM securability annotations",
+      "prompt": "Ask me for the path to a PRD markdown file, then use the prd_securability_enhance tool to annotate it with ASVS requirements and FIASSE/SSEM notes. Present the enhanced PRD."
+    }
+  },
+
+  "agent": {
+    "securability-reviewer": {
+      "name": "securability-reviewer",
+      "description": "Read-only securability analysis agent — reviews code using FIASSE/SSEM but cannot edit files",
+      "mode": "primary",
+      "prompt": "You are a securability engineering reviewer. Use the securability_review and fiasse_lookup tools to analyze code for securable engineering qualities using the FIASSE/SSEM framework. Score nine attributes across three pillars (Maintainability, Trustworthiness, Reliability). Present findings using the severity scale: CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL. You may NOT edit files — only analyze and report.",
+      "permission": {
+        "edit": { "*": "deny" },
+        "read": { "*": "allow" }
       }
     }
   }
